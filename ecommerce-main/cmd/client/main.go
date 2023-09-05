@@ -82,23 +82,25 @@ func main() {
 		}
 	})
 
-
-	r.POST("/updateemail", func(c *gin.Context) {
-		var user models.UpdateEmail
-		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-			return
-		}
-		response, err := client.UpdateEmail(c.Request.Context(), &pb.EmailDetails{CustomerId: user.CustomerId,OldEmail: user.OldEmail,NewEmail: user.NewEmail})
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"value": response})
+	r.POST("/updatecustomer", func(c *gin.Context) {
+		var user models.UpdateRequest
 		
-	})
 
+		if err := c.ShouldBindJSON(&user); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		updatedUser, err := client.UpdateCustomer(c.Request.Context(),&pb.UpdateDetails{CustomerId: user.CustomerId,
+		Field: user.Field, Value: user.Value})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "User updated", "data": updatedUser})
+
+	})
 
 
 	r.POST("/resetpassword", func(c *gin.Context) {
@@ -117,7 +119,6 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"value": response})
 	})
 
-	
 	r.Run(":8080")
 }
 
