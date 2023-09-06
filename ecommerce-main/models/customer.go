@@ -41,18 +41,17 @@ type UpdatePassword struct {
 	OldPassword string `json:"oldpassword" bson:"oldpassword"`
 	NewPassword string `json:"newpassword" bson:"newpassword"`
 }
-type UpdateEmail struct {
-	CustomerId string `json:"customerid" bson:"customerid"`
-	OldEmail   string `json:"oldemail" bson:"oldemail"`
-	NewEmail   string `json:"newemail" bson:"newemail"`
-}
 
 type UpdateRequest struct {
 	CustomerId string `json:"customerid"`
 	Field      string `json:"field"`
-	Value      string `json:"value"`
+	OldValue   string `json:"oldvalue"`
+	NewValue   string `json:"newvalue"`
 }
 
 type DeleteRequest struct {
-	CustomerId string `json:"customerid"`
+	CustomerId string `json:"customerid" bson:"customerid"`
+}
+type GetbyId struct {
+	Token string `json:"token" bson:"token"`
 }

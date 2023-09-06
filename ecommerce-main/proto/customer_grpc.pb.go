@@ -25,9 +25,9 @@ type CustomerServiceClient interface {
 	CreateCustomer(ctx context.Context, in *CustomerDetails, opts ...grpc.CallOption) (*CustomerResponse, error)
 	CreateTokens(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Empty, error)
 	UpdatePassword(ctx context.Context, in *PasswordDetails, opts ...grpc.CallOption) (*CustomerResponse, error)
-	UpdateEmail(ctx context.Context, in *EmailDetails, opts ...grpc.CallOption) (*CustomerResponse, error)
 	UpdateCustomer(ctx context.Context, in *UpdateDetails, opts ...grpc.CallOption) (*CustomerResponse, error)
 	DeleteCustomer(ctx context.Context, in *DeleteDetails, opts ...grpc.CallOption) (*Empty, error)
+	GetByCustomerId(ctx context.Context, in *GetbyId, opts ...grpc.CallOption) (*CustomerDetails, error)
 }
 
 type customerServiceClient struct {
@@ -65,15 +65,6 @@ func (c *customerServiceClient) UpdatePassword(ctx context.Context, in *Password
 	return out, nil
 }
 
-func (c *customerServiceClient) UpdateEmail(ctx context.Context, in *EmailDetails, opts ...grpc.CallOption) (*CustomerResponse, error) {
-	out := new(CustomerResponse)
-	err := c.cc.Invoke(ctx, "/customer.CustomerService/UpdateEmail", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *customerServiceClient) UpdateCustomer(ctx context.Context, in *UpdateDetails, opts ...grpc.CallOption) (*CustomerResponse, error) {
 	out := new(CustomerResponse)
 	err := c.cc.Invoke(ctx, "/customer.CustomerService/UpdateCustomer", in, out, opts...)
@@ -92,6 +83,15 @@ func (c *customerServiceClient) DeleteCustomer(ctx context.Context, in *DeleteDe
 	return out, nil
 }
 
+func (c *customerServiceClient) GetByCustomerId(ctx context.Context, in *GetbyId, opts ...grpc.CallOption) (*CustomerDetails, error) {
+	out := new(CustomerDetails)
+	err := c.cc.Invoke(ctx, "/customer.CustomerService/GetByCustomerId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CustomerServiceServer is the server API for CustomerService service.
 // All implementations must embed UnimplementedCustomerServiceServer
 // for forward compatibility
@@ -99,9 +99,9 @@ type CustomerServiceServer interface {
 	CreateCustomer(context.Context, *CustomerDetails) (*CustomerResponse, error)
 	CreateTokens(context.Context, *Token) (*Empty, error)
 	UpdatePassword(context.Context, *PasswordDetails) (*CustomerResponse, error)
-	UpdateEmail(context.Context, *EmailDetails) (*CustomerResponse, error)
 	UpdateCustomer(context.Context, *UpdateDetails) (*CustomerResponse, error)
 	DeleteCustomer(context.Context, *DeleteDetails) (*Empty, error)
+	GetByCustomerId(context.Context, *GetbyId) (*CustomerDetails, error)
 	mustEmbedUnimplementedCustomerServiceServer()
 }
 
@@ -118,14 +118,14 @@ func (UnimplementedCustomerServiceServer) CreateTokens(context.Context, *Token) 
 func (UnimplementedCustomerServiceServer) UpdatePassword(context.Context, *PasswordDetails) (*CustomerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePassword not implemented")
 }
-func (UnimplementedCustomerServiceServer) UpdateEmail(context.Context, *EmailDetails) (*CustomerResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateEmail not implemented")
-}
 func (UnimplementedCustomerServiceServer) UpdateCustomer(context.Context, *UpdateDetails) (*CustomerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCustomer not implemented")
 }
 func (UnimplementedCustomerServiceServer) DeleteCustomer(context.Context, *DeleteDetails) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteCustomer not implemented")
+}
+func (UnimplementedCustomerServiceServer) GetByCustomerId(context.Context, *GetbyId) (*CustomerDetails, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetByCustomerId not implemented")
 }
 func (UnimplementedCustomerServiceServer) mustEmbedUnimplementedCustomerServiceServer() {}
 
@@ -194,24 +194,6 @@ func _CustomerService_UpdatePassword_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CustomerService_UpdateEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EmailDetails)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CustomerServiceServer).UpdateEmail(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/customer.CustomerService/UpdateEmail",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CustomerServiceServer).UpdateEmail(ctx, req.(*EmailDetails))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _CustomerService_UpdateCustomer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateDetails)
 	if err := dec(in); err != nil {
@@ -248,6 +230,24 @@ func _CustomerService_DeleteCustomer_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CustomerService_GetByCustomerId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetbyId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CustomerServiceServer).GetByCustomerId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/customer.CustomerService/GetByCustomerId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CustomerServiceServer).GetByCustomerId(ctx, req.(*GetbyId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CustomerService_ServiceDesc is the grpc.ServiceDesc for CustomerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -268,16 +268,16 @@ var CustomerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CustomerService_UpdatePassword_Handler,
 		},
 		{
-			MethodName: "UpdateEmail",
-			Handler:    _CustomerService_UpdateEmail_Handler,
-		},
-		{
 			MethodName: "UpdateCustomer",
 			Handler:    _CustomerService_UpdateCustomer_Handler,
 		},
 		{
 			MethodName: "DeleteCustomer",
 			Handler:    _CustomerService_DeleteCustomer_Handler,
+		},
+		{
+			MethodName: "GetByCustomerId",
+			Handler:    _CustomerService_GetByCustomerId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
