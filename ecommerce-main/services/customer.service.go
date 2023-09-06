@@ -39,6 +39,15 @@ func VerifyPassword(hashedPassword, plainPassword string) bool {
 	return err != nil
 }
 
+func VerifyPasswordForResetPassword(hashedPassword, plainPassword string) bool {
+	fmt.Println("Verifying password")
+	fmt.Println(hashedPassword)
+	fmt.Println(plainPassword)
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
+	fmt.Println(err)
+	return err == nil
+}
+
 // InitCustomerService initializes a new CustomerService instance.
 func InitCustomerService(collection, tokenCollection *mongo.Collection, ctx context.Context) interfaces.ICustomer {
 	return &CustomerService{collection, tokenCollection, ctx}
@@ -76,7 +85,7 @@ func (p *CustomerService) UpdatePassword(user *models.UpdatePassword) (*models.C
 	fmt.Println("serives")
 	fmt.Println(customer.HashesAndSaltedPassword)
 	fmt.Println(user.OldPassword)
-	if !VerifyPassword(customer.HashesAndSaltedPassword, user.OldPassword) {
+	if !VerifyPasswordForResetPassword(customer.HashesAndSaltedPassword, user.OldPassword) {
 		fmt.Println("errror in verifying")
 		return nil, nil
 	}
