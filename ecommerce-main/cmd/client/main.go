@@ -147,28 +147,18 @@ func isValidUser(user User) bool {
 	var customer models.Customer
 	err := collection.FindOne(ctx, query).Decode(&customer)
 	if err != nil {
-		fmt.Println("error decoding customer")
 		return false
 	}
 	fmt.Println(customer.HashesAndSaltedPassword)
 
 	if customer.Email == user.Email {
 		result := services.VerifyPassword(customer.HashesAndSaltedPassword, user.Password)
-		fmt.Println(result)
 		if result == false {
 			return true
 		}
 		return false
 	}
 	return false
-	// filter := bson.M{"email": user.Email, "hashedandsaltedpassword": user.Password, "customerid": user.CustomerId}
-	// count, err := collection.CountDocuments(ctx, filter)
-	// if err != nil {
-
-	// 	fmt.Println("ERROR")
-	// 	return false
-	// }
-	// return count > 0
 }
 
 func createToken(email, customerid string) (string, error) {

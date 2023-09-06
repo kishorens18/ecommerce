@@ -82,9 +82,6 @@ func (s *RPCServer) CreateTokens(ctx context.Context, req *pro.Token) (*pro.Empt
 
 func (s *RPCServer) UpdatePassword(ctx context.Context, req *pro.PasswordDetails) (*pro.CustomerResponse, error) {
 	var pass models.UpdatePassword
-	fmt.Println(req.Email)
-	fmt.Println(req.NewPassword)
-	fmt.Println(req.OldPassword)
 	if req != nil {
 		pass = models.UpdatePassword{
 			Email:       req.Email,
@@ -92,14 +89,9 @@ func (s *RPCServer) UpdatePassword(ctx context.Context, req *pro.PasswordDetails
 			NewPassword: req.NewPassword,
 		}
 	}
-	fmt.Println("pass")
-	fmt.Println(pass.Email)
-	fmt.Println(pass.NewPassword)
-	fmt.Println(pass.OldPassword)
 
 	result, err := CustomerService.UpdatePassword(&pass)
 	if err != nil {
-		fmt.Println("getting response from service not")
 		return nil, err
 	} else {
 		fmt.Println(result.Customer_id)
