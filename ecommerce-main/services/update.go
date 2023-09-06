@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (p *CustomerService) UpdateCustomer(user *models.UpdateRequest) (*models.Customer, error) {
+func (p *CustomerService) UpdateCustomer(user *models.UpdateRequest) (*models.CustomerDBResponse, error) {
 	filter := bson.D{{Key: "customerid", Value: user.CustomerId}}
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: user.Field, Value: user.Value}}}}
 	options := options.Update()
@@ -17,7 +17,7 @@ func (p *CustomerService) UpdateCustomer(user *models.UpdateRequest) (*models.Cu
 	}
 
 	// Fetch the updated user document
-	var updatedUser models.Customer
+	var updatedUser models.CustomerDBResponse
 	err = p.ProfileCollection.FindOne(p.ctx, filter).Decode(&updatedUser)
 	if err != nil {
 		return nil, err

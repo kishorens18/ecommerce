@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kishorens18/ecommerce/interfaces"
 	"github.com/kishorens18/ecommerce/models"
+	ecommerce "github.com/kishorens18/ecommerce/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -133,8 +134,8 @@ func (s *RPCServer) UpdateCustomer(ctx context.Context, req *pro.UpdateDetails) 
 	if req != nil {
 		cus = models.UpdateRequest{
 			CustomerId: req.CustomerId,
-			Field:   req.Field,
-			Value:   req.Value,
+			Field:      req.Field,
+			Value:      req.Value,
 		}
 	}
 
@@ -146,8 +147,26 @@ func (s *RPCServer) UpdateCustomer(ctx context.Context, req *pro.UpdateDetails) 
 
 	// Create and return the response
 	responseCustomer := &pro.CustomerResponse{
-		Customer_ID: updatedUser.CustomerId,
+		Customer_ID: updatedUser.Customer_id,
 	}
 
 	return responseCustomer, nil
+}
+
+func (s *RPCServer) DeleteCustomer(ctx context.Context, req *pro.DeleteDetails) (*ecommerce.Empty, error) {
+
+	var cuss models.DeleteRequest
+	if req != nil && req.CustomerID != "" {
+		cuss = models.DeleteRequest{
+			CustomerId: req.CustomerID,
+		}
+	} else {
+		// Handle the case where req or req.CustomerID is nil or empty
+		return nil, status.Error(codes.InvalidArgument, "Invalid Customer ID")
+	}
+
+	// Call the DeleteCustomer service function
+	CustomerService.DeleteCustomer(&cuss)
+
+	return &ecommerce.Empty{}, nil
 }
