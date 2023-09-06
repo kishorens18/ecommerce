@@ -31,8 +31,12 @@ func HashPassword(password string) (string, error) {
 
 // VerifyPassword compares a hashed password with a plain password.
 func VerifyPassword(hashedPassword, plainPassword string) bool {
+	fmt.Println("Verifying password")
+	fmt.Println(hashedPassword)
+	fmt.Println(plainPassword)
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
-	return err == nil
+	fmt.Println(err)
+	return err != nil
 }
 
 // InitCustomerService initializes a new CustomerService instance.
@@ -69,8 +73,11 @@ func (p *CustomerService) UpdatePassword(user *models.UpdatePassword) (*models.C
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("serives")
+	fmt.Println(customer.HashesAndSaltedPassword)
+	fmt.Println(user.OldPassword)
 	if !VerifyPassword(customer.HashesAndSaltedPassword, user.OldPassword) {
+		fmt.Println("errror in verifying")
 		return nil, nil
 	}
 
@@ -186,16 +193,14 @@ func (p *CustomerService) DeleteCustomer(user *models.DeleteRequest) {
 	}
 }
 
-
-func(p *CustomerService)GetByCustomerId(id string)(*models.Customer,error){
+func (p *CustomerService) GetByCustomerId(id string) (*models.Customer, error) {
 	filter := bson.D{{Key: "customerid", Value: id}}
 	var customer *models.Customer
 	res := p.ProfileCollection.FindOne(p.ctx, filter)
 	err := res.Decode(&customer)
-	if err!=nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
-	return customer,nil
-
+	return customer, nil
 
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/kishorens18/ecommerce/constants"
 	"github.com/kishorens18/ecommerce/models"
 	pb "github.com/kishorens18/ecommerce/proto"
+	"github.com/kishorens18/ecommerce/services"
 	"google.golang.org/grpc"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -141,14 +142,30 @@ func isValidUser(user User) bool {
 	// Simulated user validation (replace with your actual validation logic)
 	mongoclient, _ := config.ConnectDataBase()
 	collection := mongoclient.Database("Ecommerce").Collection("CustomerProfile")
-	filter := bson.M{"email": user.Email, "hashedandsaltedpassword": user.Password, "customerid": user.CustomerId}
-	count, err := collection.CountDocuments(ctx, filter)
-	if err != nil {
 
-		fmt.Println("ERROR")
+	query := bson.M{"customerid": user.CustomerId}
+	var customer models.Customer
+	err := collection.FindOne(ctx, query).Decode(&customer)
+	if err != nil {
+		fmt.Println("error decoding customer")
 		return false
 	}
-	return count > 0
+	fmt.Println(customer.HashesAndSaltedPassword)
+
+	result := services.VerifyPassword(customer.HashesAndSaltedPassword, user.Password)
+	fmt.Println(result)
+	if result == false {
+		return true
+	}
+	return false
+	// filter := bson.M{"email": user.Email, "hashedandsaltedpassword": user.Password, "customerid": user.CustomerId}
+	// count, err := collection.CountDocuments(ctx, filter)
+	// if err != nil {
+
+	// 	fmt.Println("ERROR")
+	// 	return false
+	// }
+	// return count > 0
 }
 
 func createToken(email, customerid string) (string, error) {
