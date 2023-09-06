@@ -152,10 +152,13 @@ func isValidUser(user User) bool {
 	}
 	fmt.Println(customer.HashesAndSaltedPassword)
 
-	result := services.VerifyPassword(customer.HashesAndSaltedPassword, user.Password)
-	fmt.Println(result)
-	if result == false {
-		return true
+	if customer.Email == user.Email {
+		result := services.VerifyPassword(customer.HashesAndSaltedPassword, user.Password)
+		fmt.Println(result)
+		if result == false {
+			return true
+		}
+		return false
 	}
 	return false
 	// filter := bson.M{"email": user.Email, "hashedandsaltedpassword": user.Password, "customerid": user.CustomerId}
