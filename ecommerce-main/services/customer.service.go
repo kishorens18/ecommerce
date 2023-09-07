@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/kishorens18/ecommerce/config"
 	"github.com/kishorens18/ecommerce/interfaces"
 	"github.com/kishorens18/ecommerce/models"
 	ecommerce "github.com/kishorens18/ecommerce/proto"
@@ -32,7 +33,7 @@ func HashPassword(password string) (string, error) {
 // VerifyPassword compares a hashed password with a plain password.
 func VerifyPassword(hashedPassword, plainPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
-	return err != nil
+	return err == nil
 }
 
 func VerifyPasswordForResetPassword(hashedPassword, plainPassword string) bool {
@@ -47,15 +48,23 @@ func InitCustomerService(collection, tokenCollection *mongo.Collection, ctx cont
 
 // CreateCustomer creates a new customer and stores it in the database.
 func (p *CustomerService) CreateCustomer(user *models.Customer) (*models.CustomerDBResponse, error) {
-	user.HashesAndSaltedPassword, _ = HashPassword(user.HashesAndSaltedPassword)
+	
 	res, err := p.ProfileCollection.InsertOne(p.ctx, &user)
 	if err != nil {
 		return nil, err
 	}
+	mongoclient, _ := config.ConnectDataBase()
+	collection := mongoclient.Database("Ecommerce").Collection("CustomerProfile")
+	query := bson.M{"customerid": user.CustomerId}
+	var customer models.Customer
+	err2 := collection.FindOne(p.ctx, query).Decode(&customer)
+	if err != nil {
+		return nil, err2
+	}
 
 	var newUser models.CustomerDBResponse
-	query := bson.M{"_id": res.InsertedID}
-	err = p.ProfileCollection.FindOne(p.ctx, query).Decode(&newUser)
+	query2 := bson.M{"_id": res.InsertedID}
+	err = p.ProfileCollection.FindOne(p.ctx, query2).Decode(&newUser)
 	if err != nil {
 		return nil, err
 	}

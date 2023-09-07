@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"time"
-
+ 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/kishorens18/ecommerce/config"
@@ -28,7 +28,7 @@ var (
 
 type User struct {
 	Email      string `json:"email"`
-	Password   string `json:"hashedandsaltedpassword"`
+	Password   string `json:"password"`
 	CustomerId string `json:"customerid"`
 }
 
@@ -49,6 +49,13 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		pass, err2 := services.HashPassword(request.Password)
+		if err2 != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err2.Error()})
+			return
+		}
+		request.Password = pass
 
 		// Call the gRPC service
 		response, err := client.CreateCustomer(c.Request.Context(), &request)
@@ -152,11 +159,10 @@ func isValidUser(user User) bool {
 	fmt.Println(customer.HashesAndSaltedPassword)
 
 	if customer.Email == user.Email {
-		result := services.VerifyPassword(customer.HashesAndSaltedPassword, user.Password)
-		if result == false {
-			return true
-		}
-		return false
+		var hashedPassword string
+		hashedPassword = customer.HashesAndSaltedPassword
+		result := services.VerifyPassword(hashedPassword, user.Password)
+		return result
 	}
 	return false
 }

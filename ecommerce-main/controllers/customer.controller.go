@@ -26,6 +26,7 @@ var (
 )
 
 func (s *RPCServer) CreateCustomer(ctx context.Context, req *pro.CustomerDetails) (*pro.CustomerResponse, error) {
+
 	var address models.Address
 	if req != nil {
 		address = models.Address{
@@ -52,11 +53,12 @@ func (s *RPCServer) CreateCustomer(ctx context.Context, req *pro.CustomerDetails
 		CustomerId:              req.CustomerId,
 		Firstname:               req.Firstname,
 		Lastname:                req.Lastname,
-		HashesAndSaltedPassword: req.HashesAndSaltedPassword,
+		HashesAndSaltedPassword: req.Password,
 		Email:                   req.Email,
 		Address:                 []models.Address{address},
 		ShippingAddress:         []models.ShippingAddress{shippingAddress},
 	}
+	fmt.Println(dbCustomer.HashesAndSaltedPassword)
 	result, err := CustomerService.CreateCustomer(&dbCustomer)
 	if err != nil {
 		return nil, err
