@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"time"
- 
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/kishorens18/ecommerce/config"
@@ -156,11 +156,11 @@ func isValidUser(user User) bool {
 	if err != nil {
 		return false
 	}
-	fmt.Println(customer.HashesAndSaltedPassword)
+	fmt.Println(customer.Password)
 
 	if customer.Email == user.Email {
-		var hashedPassword string
-		hashedPassword = customer.HashesAndSaltedPassword
+
+		hashedPassword := customer.Password
 		result := services.VerifyPassword(hashedPassword, user.Password)
 		return result
 	}

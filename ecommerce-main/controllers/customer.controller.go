@@ -50,15 +50,15 @@ func (s *RPCServer) CreateCustomer(ctx context.Context, req *pro.CustomerDetails
 	}
 
 	dbCustomer := models.Customer{
-		CustomerId:              req.CustomerId,
-		Firstname:               req.Firstname,
-		Lastname:                req.Lastname,
-		HashesAndSaltedPassword: req.Password,
-		Email:                   req.Email,
-		Address:                 []models.Address{address},
-		ShippingAddress:         []models.ShippingAddress{shippingAddress},
+		CustomerId:      req.CustomerId,
+		Firstname:       req.Firstname,
+		Lastname:        req.Lastname,
+		Password:        req.Password,
+		Email:           req.Email,
+		Address:         []models.Address{address},
+		ShippingAddress: []models.ShippingAddress{shippingAddress},
 	}
-	fmt.Println(dbCustomer.HashesAndSaltedPassword)
+	fmt.Println(dbCustomer.Password)
 	result, err := CustomerService.CreateCustomer(&dbCustomer)
 	if err != nil {
 		return nil, err
