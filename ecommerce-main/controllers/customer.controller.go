@@ -10,10 +10,9 @@ import (
 	"github.com/kishorens18/ecommerce/constants"
 	"github.com/kishorens18/ecommerce/interfaces"
 	"github.com/kishorens18/ecommerce/models"
+	pro "github.com/kishorens18/ecommerce/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	pro "github.com/kishorens18/ecommerce/proto"
 )
 
 type RPCServer struct {
@@ -58,7 +57,7 @@ func (s *RPCServer) CreateCustomer(ctx context.Context, req *pro.CustomerDetails
 		Address:         []models.Address{address},
 		ShippingAddress: []models.ShippingAddress{shippingAddress},
 	}
-	fmt.Println(dbCustomer.Password)
+
 	result, err := CustomerService.CreateCustomer(&dbCustomer)
 	if err != nil {
 		return nil, err
@@ -96,7 +95,6 @@ func (s *RPCServer) UpdatePassword(ctx context.Context, req *pro.PasswordDetails
 	if err != nil {
 		return nil, err
 	} else {
-		fmt.Println(result.Customer_id)
 		responseCustomer := &pro.CustomerResponse{
 			Customer_ID: result.Customer_id,
 		}
@@ -106,12 +104,15 @@ func (s *RPCServer) UpdatePassword(ctx context.Context, req *pro.PasswordDetails
 
 func (s *RPCServer) UpdateCustomer(ctx context.Context, req *pro.UpdateDetails) (*pro.CustomerResponse, error) {
 	// Check if the request is nil
+
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "Request is nil")
 	}
 
 	// Validate the request fields
+
 	if req.CustomerId == "" || req.Field == "" || req.OldValue == "" || req.NewValue == "" {
+		fmt.Println("error fpound")
 		return nil, status.Error(codes.InvalidArgument, "Missing required fields")
 	}
 
@@ -128,6 +129,7 @@ func (s *RPCServer) UpdateCustomer(ctx context.Context, req *pro.UpdateDetails) 
 	// Call the UpdateCustomer service function
 	updatedUser, err := CustomerService.UpdateCustomer(&cus)
 	if err != nil {
+		fmt.Println("error from service", err)
 		return nil, status.Error(codes.Internal, "Failed to update user")
 	}
 
@@ -136,7 +138,7 @@ func (s *RPCServer) UpdateCustomer(ctx context.Context, req *pro.UpdateDetails) 
 		Customer_ID: updatedUser.Customer_id,
 	}
 
-	return responseCustomer, nil
+	return responseCustomer, err
 }
 func (s *RPCServer) DeleteCustomer(ctx context.Context, req *pro.DeleteDetails) (*pro.Empty, error) {
 
@@ -146,12 +148,18 @@ func (s *RPCServer) DeleteCustomer(ctx context.Context, req *pro.DeleteDetails) 
 			CustomerId: req.CustomerID,
 		}
 	} else {
+		fmt.Println("request from client is empty")
 		// Handle the case where req or req.CustomerID is nil or empty
 		return nil, status.Error(codes.InvalidArgument, "Invalid Customer ID")
 	}
 
 	// Call the DeleteCustomer service function
-	CustomerService.DeleteCustomer(&cuss)
+	err3 := CustomerService.DeleteCustomer(&cuss)
+
+	if err3 != nil {
+		fmt.Println("error from service")
+		return nil, err3
+	}
 	return &pro.Empty{}, nil
 }
 
