@@ -91,12 +91,6 @@ func HandlerDeleteCustomer(c *gin.Context) {
 		panic(err)
 	}
 
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		fmt.Println("error while blinding")
-		return
-	}
-
 	grpcClient, _ := grpcclient.GetGrpcClientInstance()
 	_, err2 := grpcClient.DeleteCustomer(c.Request.Context(), &pb.DeleteDetails{CustomerID: user.CustomerId})
 	if err2 != nil {
