@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -51,19 +52,25 @@ func InitCustomerService(collection, tokenCollection *mongo.Collection, ctx cont
 // CreateCustomer creates a new customer and stores it in the database.
 func (p *CustomerService) CreateCustomer(user *models.Customer) (*models.CustomerDBResponse, error) {
 
-	res, err := p.ProfileCollection.InsertOne(p.ctx, &user)
+	mongoclient, _ := config.ConnectDataBase()
+	collection := mongoclient.Database("Ecommerce").Collection("CustomerProfile")
+	query := bson.D{
+		{Key: "$or", Value: []interface{}{
+			bson.D{{Key: "customerid", Value: user.CustomerId}},
+			bson.D{{Key: "email", Value: user.Email}},
+		}},
+	}
+	var existingCustomer models.Customer
+	err2 := collection.FindOne(p.ctx, query).Decode(&existingCustomer)
+	if err2 == nil {
+		return nil, errors.New("Customer with the same customerId or email already exists")
+	} else if err2 != mongo.ErrNoDocuments {
+		return nil, err2
+	}
+	res, err := p.ProfileCollection.InsertOne(p.ctx, user)
 	if err != nil {
 		return nil, err
 	}
-	mongoclient, _ := config.ConnectDataBase()
-	collection := mongoclient.Database("Ecommerce").Collection("CustomerProfile")
-	query := bson.M{"customerid": user.CustomerId}
-	var customer models.Customer
-	err2 := collection.FindOne(p.ctx, query).Decode(&customer)
-	if err != nil {
-		return nil, err2
-	}
-
 	var newUser models.CustomerDBResponse
 	query2 := bson.M{"_id": res.InsertedID}
 	err = p.ProfileCollection.FindOne(p.ctx, query2).Decode(&newUser)
@@ -71,6 +78,27 @@ func (p *CustomerService) CreateCustomer(user *models.Customer) (*models.Custome
 		return nil, err
 	}
 	return &newUser, nil
+
+	// res, err := p.ProfileCollection.InsertOne(p.ctx, &user)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// mongoclient, _ := config.ConnectDataBase()
+	// collection := mongoclient.Database("Ecommerce").Collection("CustomerProfile")
+	// query := bson.M{"customerid": user.CustomerId}
+	// var customer models.Customer
+	// err2 := collection.FindOne(p.ctx, query).Decode(&customer)
+	// if err != nil {
+	// 	return nil, err2
+	// }
+
+	// var newUser models.CustomerDBResponse
+	// query2 := bson.M{"_id": res.InsertedID}
+	// err = p.ProfileCollection.FindOne(p.ctx, query2).Decode(&newUser)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// return &newUser, nil
 }
 
 // UpdatePassword updates the password for a customer.
@@ -205,7 +233,6 @@ func (p *CustomerService) UpdateCustomer(user *models.UpdateRequest) (*models.Cu
 		}
 		return &updatedUser, nil
 	}
-	return &updatedUser, nil
 }
 func (p *CustomerService) DeleteCustomer(user *models.DeleteRequest) error {
 	// Check if the customer ID is provided
